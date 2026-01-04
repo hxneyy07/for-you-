@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>For you!</title>
+<style>
+:root{
+  --pink:#ffd6e8;
+  --deep:#c2185b;
+  --accent:#ff7bbd;
+  --card:#fff3f6;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg,var(--pink), #ffe1ef);
+  color: var(--deep);
+  min-height:100vh;
+  overflow-x:hidden;
+  overflow-y: auto;
+}
+.page{ display:none; min-height:100vh;
+ width:100vw; padding:40px; align-items:center; justify-content:center; flex-direction:column; text-align:center; }
+.page.show{ display:flex; }
+h1{ margin:0 0 14px 0; font-size: clamp(20px,4vw,44px); letter-spacing:0.6px; }
+h2{ margin:10px 0 18px 0; font-weight:600; }
+p{ color: #b30059; line-height:1.6; }
+
+.controls { display:flex; gap:18px; margin-top:18px; }
+.btn{ background:var(--accent); color:white; border:0; padding:10px 20px; border-radius:12px; font-size:16px; cursor:pointer; box-shadow: 0 6px 18px rgba(194,24,91,0.12);}
+
+.gifts { display:flex; gap:30px; align-items:center; justify-content:center; margin-top:30px; flex-wrap:wrap; }
+.gift-card { width:150px; height:150px; background:var(--card); border-radius:18px; display:flex; align-items:center; justify-content:center; box-shadow: 0 8px 30px rgba(0,0,0,0.05); cursor:pointer; transition:transform .25s ease; font-size:48px; font-weight:bold; color:var(--accent); }
+.gift-card:hover{ transform:translateY(-6px) scale(1.02); }
+
+.cake-wrap{ display:flex; flex-direction:column; align-items:center; gap:12px; position:relative; }
+.cake-video{ width:260px; max-width:80vw; border-radius:16px; }
+
+#happyText{ font-size: clamp(28px,4vw,48px); color:var(--deep); display:none; margin-top:12px; }
+
+.tae-row img{
+  width:260px;
+  border-radius:14px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+.back, .next {
+  position: fixed;
+  bottom: 18px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 0;
+  font-size: 16px;
+  cursor: pointer;
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 10px 30px rgba(194,24,91,0.12);
+}
+.back{ left: 18px; }
+.next{ right: 18px; }
+
+.doodle-text{
+  max-width:850px;
+  font-size:18px;
+  color:#a30053;
+  margin-top:18px;
+  line-height:1.7;
+  white-space:pre-line;
+}
+
+@media (max-width:520px){
+  .tae-row img{ width:200px; }
+  .gift-card{ width:120px; height:120px; }
+}
+
+@media (max-width:600px){
+
+  .back,
+  .next{
+    position: fixed;
+    bottom: 14px;
+    z-index: 999;
+    padding: 10px 16px;
+    font-size: 15px;
+  }
+
+  .back{
+    left: 12px;
+    right: auto;
+  }
+
+  .next{
+    right: 12px;
+    left: auto;
+  }
+
+  /* FINAL PAGE: buttons normal rakho (no grouping, no stretch) */
+  #page-final button{
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+</style>
+</head>
+<body>
+
+<section id="page-intro" class="page show">
+  <h1>FOR MY FAVOURITE GIRL!</h1>
+  <h2>I've prepared something special for you...</h2>
+</section>
+
+<section id="page-yn" class="page" aria-hidden="true">
+  <h1>Do you want to open your gift?👀</h1>
+  <div class="controls fade-in" style="margin-top:22px">
+    <button class="btn btn-no" onclick="chooseNo()">NO</button>
+    <button class="btn" onclick="chooseYes()">YES</button>
+  </div>
+</section>
+
+<section id="page-no" class="page" aria-hidden="true">
+  <h1>HOW DARE YOU! 🧐</h1>
+  <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAJQAqAMBIgACEQEDEQH/xAAbAAABBQEBAAAAAAAAAAAAAAAAAQIDBAUGB//EAEYQAAEDAgMEBgUHBw0AAAAAAAEAAgMEEQUSIQYxQVETImFxgdEUMkKRsRY1UnKTocEkhJKUovDxBxUlMzRFU1RVYnOC4f/EABgBAAMBAQAAAAAAAAAAAAAAAAABAgME/8QAIREBAQACAgMAAgMAAAAAAAAAAAECEQMhEjFBEyIEQlH/2gAMAwEAAhEDEQA/ALUjgGOO6wK5bCKV01FXVM5cZDMQ0k7gP4rpMQuKGoy7+jNvcqGFZXYZIWA65j3my5s263QPLqZodvb1SrY3KIRdE5lmlokiY/UW3/wTwU56M9KE1NkdlY47rDegOY24xr0SmNLHfO/Q25/v+C81zXJJN1tbVTmSuykkn1ie0rCWmPTPI8ptrpWtJO4pxaRwT2mRGUiUo4J7ABTgE2yePVStMBqcGp7U6yi0zF6dslWelbOwNJJdC4REnkHC33LzFdp/J/UG01PwMjHd372RTjvgU66YN6cUlMfa9+XAJ7+0Wt+9Ch22fkwK30pWhCmhrTgPhkadxaVRwNjWYVAAPWbc9pV946jvqlU8H+bKb6qoJqV+ampbuLiIANewlThVKTSGFt90RHucrQOiVEOUdTrTODeIse5OukfqDysg3juNzCoxKeRoytzWaOwaLPK39qcIlw6rL3AdDM4lhHDsWE1pe4NAuStJ6Rku0EBkO5OrqUwvvwcNympHPpQC+FxHMLUIjroLWtfceSzuWrtpMd4uWtrZIrdXTSQyEPba33qDLcq97Z2aMAUjWpRGQU4N4I2WgNEocmEpAUtApGq6v+T2N7sTkkHqNaA7lfWy5v0Wo6ITGJzYzuc4WuF3mwNM6HDWzPbYzyud4AWCVPVdeLIKaCnI0pzW3bvyClYPanHwKFFtycz8MjHGUn4eaFNgdITcHkQs/BHf0dGDoWlzbdzinzRQBrSYY9HD2AlZBHEGkxtcZWh4JaAbXLbfso2DaV3qWIsDI0a8i3zVxZdP0TpOisCWySDKRuvbyVsRQ2/qo/0QlsLV0XVboYf8KP8ARCp4pURUVPpFF0j/AFTlGnajYP2hw1mJ4dJA7R9rsPJy8skpZqOv9HmjLZGGxBG9do2aZxuHvAPI6KWqw1tXB6RORnitY8dUTPXsa25ySqqmULZImtd1rObkvYKzhznTuY50ZjJIBCvspms9XRTUtODOxjTY5gVnc5Y6ccL7XanZ8Ppi4gPuLrl5MKb0kkYa5jx6nIr1SGECIMdqs+sw2B8x6g03LOZWVdwxyec0GCTzuyTgxXOh5d624tiZy1j2yB19SF1tJSxsNsgN+xbjGhsQAGllVypfjxjyzHtkTQ0ElW03yC5bwVDZ3Z0YhA+qqC6Ona62Ycexel7QxGfCKuFou58Za0cylw/C6aCgpaYt6kQGg0DnW480pyXx0X455bc1tNRZNl2sYNekbHGSOBIstfDoY6ampaeI6RxW+CjxmshrcQZRscSae0sjbaNNuqPiUscw6doHBp+K0wy67Zctnl01AdEt1XbJcJwetJkzc1tg7Ni+Es+sf2moUO0T+l2poI/oRNPvc7yCFNpbXG4qyrHR5uiB42upm1Bka1r6uRzYgWM6oGUXvb3krMZs5iLPaiP/AGTjgeIDcI/B60ymPxzY5cn9o0mRtyulZNIGh13Py6XPaon4xHTvMTryEHRx0urFBSy/J2she05y5lhzIzD8QshmzOIzPYJXxMYSMzs17DuUySe153PXTTpcXjmzFwyMG53Pn7lk41VCrqWmMdQWbcrYOzkuQBk9OA0aNN+G4HvOp52Cgl2Uke7rVsRFwHGzruG8+Ljp2BF8fi8PLX7KlO0MjzHc1uZOg/Ko3OA04BSM2TqmvDn18BPtXDrEk3cfDQBXqPCKimZcvp3OGoF3cD3LGz40lYzXXU9E5raxjnbgUYjSupKx7XWyu6zS3dZV3szluV5a4Hgs9adeN3HetkZLEOje29uBVGqeWzWOpsszD4BM8RTuc45b3Bt8FsCmblAFzbS5NylVw6DUAq2JDYKCJgboDdSo2Lokxa4a8FyW0eMvpKiFvpLooh0jiGt1bZjg1wPPNYWXTzv1sPFeZbel7sXyAnI2IaeJKvikufbLktmK3sCx9Y+tkleS67MzjqSdV2DaBokzh7jpbcszYbDDQYMHSC01Q7pDflwXRgLbLXk5YriLLpqlyKxZIQEjYVbhEc+KsrzI8PYwNDQBbQnzQtWRupSILSS9kmfVVRj2zrh88MHfE/yTf582ccMwxlhH/G7yR402tSvZ6NUh9sxa23vULTc6KgMc2dH98R/Zv8kox/Z0b8Zj+yf5I1Q0Ut1n/KHZ7hjEZ7on+SPlDs9/rDPsX+SNULpA5BJlvxVMbQ7PX+dh9i/yR8o9mxvxdv2L/JKyg3GqL0mizsF5YjmHaOIXG1MsoymB7G34m+9doNpdm+GLt+xf5LlsWmwubECMKq2yxSdYtyFmQ8d415qbjZ20489dG0VVimVgbI0P+kCt2kfjMjGmSqhsDr1d4WbQ0rHNB6QgDhddFRUrGxgtkWdrr60sQTvGkg15hSyVADTqoJSyBt3Ee9UxJ08mnqrO0pF2N3SdYlYjmUtVtdJTyRskLaUON9cpDuHgVbx3GYcFocxs+dwtHGOfPuXnWF4jWx4uK+GX8os98jnC4LQC5wPZYW9y34MLe3PzZTWnrjWAbhbuS2WbHtVs89jSKqp1FyBTPP4JflTs+0XfU1Y/NX+S18axaNklrrO+Vmzf+aqz+bOTTtZs0D/aaz9WKPGhfeELOdtbsxxqK39XKEaDz1mrRfVV6fSMeKniUEWgPY4j70t7XVhp1UUp6yeNVFO5jT1zbRRN7VdHQnVTg6LPFZDGd7ndyR+J20iit9Yqvx52o8sY0VSqpWNdYuA8VQlq5pdHPNuXBQOcTvK0x4u+6zvJ/i06qa03bc2SB8rg6pY4hzDrbgPJU7qWmndTyh4FxxHMLe4yekeXbYp9opom2khBP0mut9y0qbbKpADI4QO0uuVy9W6F07jStcIjuDuCh14Eg81F4sb8X+XKPQqfE31J6WqnHdewS1m0cNDCRFZz/ZXnzZpRoJHeJRmJNyST2rKfx5td/kXXS9X10tbUOnncSSL79wWk+jfheEPfUty1Fa7o428RE0guPico7gVgnVpHNaWL4tPi1Y2pqLNLY2RMY06Ma0W/98VtrXUY+W/ZsNY+nbYAOZy3KzJiEMoYGuLXcWu4LIe+5TCblK8cEzrbLrgHn2phN1lR1D4tL3bwCtMrGkdbqrO4X4uZz6sP3IURkBGhBCEaVuLsB0UMZHSSjk8p0LtFCXhskjv911nj9Xb2dU1PQts0dcjfyWW97nm73FxSyvL3XO9MXRhhJGGeVtCEqFaCJLJyRBEsiyUJbJg1BCckT2DLFOCWyLJAXSglA1TrJQzSkATrJQi0I3aJQh/JCCpQ4jihIhToNWJ1lUq3FrngcSrEZ61uxU6x+aQ96x45+zoyvSBCAlC6GNO4JEJAmk47klkqEr0CJQhCAEIQgFsgovYJL3ToDRqlKcE1ygETtwTE9wTCN29IdAlO9I7cnAG6oRFvQgNAmwJ5Kg83N1bldlab81U4lZ4RpnTUNS2SDetUJOCY1P4JjUiPQi6EUAFKgIQCOStSJwRsEdokCHG6NyWjLdBKAkRoUBKTokTgE4RhSO3J5CY/QIBYwhJGUI0Fio9XxVcpEKcF5BN9pCFaUvBMG9IhIjzuQEIRQUJUISBEvBKhBo+KeUITBAlSoQQShCEAKOXchCYNiQhCQf/Z" alt="angry cat" style="width:220px;margin-top:18px" />
+  <div style="margin-top:22px">
+    <button class="btn" onclick="backToYN()">TRY AGAIN</button>
+  </div>
+</section>
+
+<section id="page-gifts" class="page" aria-hidden="true">
+  <h1 id="gifts-title" style="opacity:0; transition: .8s; margin-bottom:8px">Gift for you</h1>
+  <p style="margin:0;color:#a30053">Click any gift to open</p>
+  <div class="gifts" style="margin-top:24px" id="giftsRow">
+    <div class="gift-card" onclick="openGift(1)">🎁</div>
+    <div class="gift-card" onclick="openGift(2)">🎁</div>
+    <div class="gift-card" onclick="openGift(3)">🎁</div>
+  </div>
+</section>
+
+<!-- 🎂 GIFT 1 (CAKE GIF) -->
+<section id="page-gift1" class="page" aria-hidden="true">
+  <div class="cake-wrap fade-in">
+    <h2 id="cakeInstruction">Blow the candle in <span id="countdown">3</span>...</h2>
+
+    <!-- ORIGINAL GIF -->
+    <img id="cakeGif" class="cake-video" src="https://cdn.pixabay.com/animation/2025/01/04/17/59/17-59-28-249_512.gif" alt="birthday cake" />
+
+    <div id="happyText">🎉 Happiest birthday ever my gurlll 🎉</div>
+  </div>
+  <button class="back" onclick="backToGifts()">⬅ Back</button>
+</section>
+
+<!-- 💌 GIFT 2 -->
+<section id="page-gift2" class="page" aria-hidden="true" style="position:relative;">
+  <h1>𝓶𝔂 𝓵𝓮𝓽𝓽𝓮𝓻 𝓽𝓸 𝔂𝓸𝓾</h1>
+  <p style="max-width:820px; margin-top:18px; font-size:18px;">
+    Happy Birthday to the kindest, most caring,
+    genuine, and lovable person I have the privilege to call my best friend! The one I can tell my soul to. I am grateful for the countless times you have uplifted my spirits and shown me what true friendship means. May your heart be filled with immense love and laughter not just today but forever. May all your dreams and aspirations come true, and the year ahead be brimming with happiness, love, and success. I am here for you, always and forever. Our friendship is a treasure that I'll hold forever, closest to my heart and I am truly blessed to have you in my life. If I could give you one gift, it would be the ability to see yourself through my eyes. Only then would you realise how truly special you are. You light up my life with every smile and laugh. You are the soft place in my day and I love you more than words can say.
+    <br><br>
+    Always, forever ❤‍🩹💫
+  </p>
+
+  <!-- RIGHT SIDE SIGNATURE AT BOTTOM -->
+  <div style="position:absolute; bottom:18px; right:18px; text-align:right; font-size:18px;">
+    With infinite love <br> ~ Aeny<3
+  </div>
+
+  <button class="back" onclick="backToGifts()">⬅ Back</button>
+</section>
+
+
+
+
+<!-- 💜 GIFT 3 (Taekook + Your Doodle Text) -->
+<section id="page-gift3" class="page" aria-hidden="true">
+
+  <!-- TOP TAEKOOK PHOTO -->
+  <div class="tae-row" style="margin-top:10px;">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGSb5hW55yIxuW4BolDjz69tzzQL8vZEvQGmXOwJdSNg&s" alt="taekook">
+  </div>
+
+  <!-- EXACT TEXT + DOODLES FROM YOUR IMAGE -->
+  <div class="doodle-text">
+✨🐰🐻
+🎉 Happy birthday to my evey!!!!! 🎉
+I hope you know that I love you with every ounce of my being.
+I hope you realise you importance not only to me but to everyone who is lucky enough to know you.
+I want you to know that no matter what I’m here for you.
+I hope you know that I appreciate you, adore you fully and that will never change💗😞🫵🏻
+🐰🐻✨
+  </div>
+
+  <button class="back" onclick="backToGifts()">⬅ Back</button>
+  <button class="next" onclick="gotoFinal()">Next ➜</button>
+</section>
+
+<!-- FINAL PAGE -->
+<section id="page-final" class="page" aria-hidden="true" style="position:relative;">
+  <h1>One small last thing…</h1>
+  <p style="max-width:820px; margin-top:18px; font-size:18px;">
+    I made this for you because your smile matters — more than you know.
+    Thank you for being you just the way you're soft, silly, kind and honest. I hope today felt gentle,
+    warm, and exactly like the magic you bring into other people's lives. And one last important thing!!! just like you've given nicknames to us, so now it's my turn to give a friendship blend name to us. So from now on just like TAEKOOK our friendship blend name will be VANEY'🫠. I hope you'll like it. 
+    <br><br>
+     Once again happyyy birthday bbg — here’s to many more little surprises and big laughs together. 
+     <br><br>
+     LYSM 🫶❤️‍🩹💫
+  </p>
+
+  <!-- BUTTONS FIXED AT BOTTOM -->
+  <div style="position:fixed; bottom:18px; left:18px; display:flex; flex-direction:column; gap:8px;">
+    <button class="next" onclick="exitSite()">Exit ✦</button>
+    <button class="btn" onclick="replay()">Replay 🔄</button>
+  </div>
+</section>
+
+<div id="confetti-wrap"></div>
+
+<script>
+const show = id => {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+  document.querySelectorAll('.page').forEach(p => p.setAttribute('aria-hidden','true'));
+  const el = document.getElementById(id);
+  el.classList.add('show');
+  el.setAttribute('aria-hidden','false');
+};
+
+setTimeout(() => { show('page-yn'); }, 3000);
+
+function chooseNo(){ show('page-no'); }
+function backToYN(){ show('page-yn'); }
+function chooseYes(){
+  show('page-gifts');
+  setTimeout(()=> { document.getElementById('gifts-title').style.opacity = 1; }, 350);
+}
+
+function openGift(n){
+  if(n===1){ show('page-gift1'); startCakeSequence(); }
+  else if(n===2){ show('page-gift2'); }
+  else { show('page-gift3'); }
+}
+function backToGifts(){ show('page-gifts'); }
+function gotoFinal(){ show('page-final'); }
+function exitSite(){ window.location.href = "https://www.google.com"; }
+
+// ---------------- CAKE LOGIC ----------------
+let countdownInterval = null;
+let cakeFrozen = false;
+
+function startCakeSequence(){
+  if (cakeFrozen) return;
+
+  const cdEl = document.getElementById('countdown');
+  const happy = document.getElementById('happyText');
+  const cakeInstruction = document.getElementById('cakeInstruction');
+
+  let num = 3;
+  cdEl.innerText = num;
+
+  countdownInterval = setInterval(()=>{
+    if(num > 1){
+      num--;
+      cdEl.innerText = num;
+      cakeInstruction.innerText = `Blow the candle in ${num}...`;
+    } else {
+      clearInterval(countdownInterval);
+      cdEl.innerText = "";
+      cakeInstruction.innerText = "";
+
+      happy.style.display = "block";
+
+      launchConfetti();
+      cakeFrozen = true;
+    }
+  },1000);
+}
+
+function launchConfetti(){
+  const wrap = document.getElementById('confetti-wrap');
+  wrap.style.display = 'block';
+  const total = 60;
+  for(let i=0;i<total;i++){
+    const el = document.createElement('div');
+    const size = 7 + Math.random()*10;
+    el.style.width = size + 'px';
+    el.style.height = size + 'px';
+    el.style.background = `hsl(${Math.floor(Math.random()*360)} 80% 65%)`;
+    el.style.position = 'absolute';
+    el.style.left = Math.random()*100 + '%';
+    el.style.top = '-10%';
+    el.style.opacity = 0.95;
+    el.style.borderRadius = (Math.random()>0.5? '2px':'50%');
+    el.style.animation = `fall${i} ${2 + Math.random()*2}s linear forwards`;
+    const style = document.createElement('style');
+    const dx = (Math.random()*40 - 20);
+    style.innerHTML = `@keyframes fall${i} { to { transform: translate(${dx}px, 110vh) rotate(${Math.random()*720}deg); opacity: 0; } }`;
+    document.head.appendChild(style);
+    wrap.appendChild(el);
+    setTimeout(()=> { el.remove(); style.remove(); }, 5000);
+  }
+  setTimeout(()=> { wrap.style.display = 'none'; }, 4200);
+}
+
+// ---------------- REPLAY FUNCTION ----------------
+function replay(){
+  location.reload(); // reloads the page to start from intro
+}
+</script>
+</body>
+</html>
